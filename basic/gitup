@@ -9,6 +9,11 @@ if [ -z "$1" ]; then
     exit 1
 fi
 
+for i in "$*"
+	do 
+	_all="${_all} $i"
+done
+
 git add --all
-git commit -m "$1"
+git commit -m "$_all"
 git push -u origin main
