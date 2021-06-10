@@ -2,13 +2,22 @@
 
 set -e
 
-# If VAR1 is --help, -h or -?, echo short help text and exit
+# If $1 is --help, -h or -?, echo short help text and exit
 VAR0=$(basename "$0")
 if [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
-    echo "Script for adding everything and pushing to a external git repositorie."
+    echo "Script for common git commands."
     echo 
-    echo "	Format: '$VAR0 The comment for the commit'"
+    echo "For just adding everything."
+    echo "	Format: '$VAR0 add'"
+    echo 
+    echo "For adding everything and pushing to a external git repositorie."
+    echo "	Format: '$VAR0 comment for the commit'"
     exit 1
+fi
+
+if [ "$VAR1" = "add" ]; then
+	git add --all
+	exit 0
 fi
 
 if [ -z "$1" ]; then
