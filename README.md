@@ -1,2 +1,2 @@
 # scripts
-Some of myscripts
+Some of my scripts
