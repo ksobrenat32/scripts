@@ -1,9 +1,17 @@
 #! /usr/bin/env bash
 
-# This script needs to be run as root
-# This script enables /tmp as a temporal filesystem that runs on ram.
-
 set -e
+
+# If VAR1 is --help, -h or -?, echo short help text and exit
+VAR0=$(basename "$0")
+if [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    echo "Script that enables /tmp as a temporal filesystem that runs on ram."
+    echo "*** For this script you need to be root."
+    echo 
+    echo "To encrypt a file with gpg"
+    echo "	Format: '$VAR0 <Maximum size in MB>'"
+    exit 1
+fi
 
 if ! [[ "$(id -u)" = 0 ]]; then
     echo "Error, this script needs to be run as root"

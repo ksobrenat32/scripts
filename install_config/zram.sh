@@ -1,9 +1,15 @@
 #! /usr/bin/env bash
 
-# This script needs to be run as root
-# This script enables a zram module.
-
 set -e
+
+VAR0=$(basename "$0")
+if [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    echo "This script enables a zram module"
+    echo "*** For this script you need to be root."
+    echo 
+    echo "	Format: '$VAR0 <Maximum size in MB>'"
+    exit 1
+fi
 
 if ! [[ "$(id -u)" = 0 ]]; then
     echo "Error, this script needs to be run as root"

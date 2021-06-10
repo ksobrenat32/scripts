@@ -1,8 +1,15 @@
 #! /usr/bin/env bash
 
-# Script for adding everything and pushing to a external git repositorie.
-
 set -e
+
+# If VAR1 is --help, -h or -?, echo short help text and exit
+VAR0=$(basename "$0")
+if [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    echo "Script for adding everything and pushing to a external git repositorie."
+    echo 
+    echo "	Format: '$VAR0 The comment for the commit'"
+    exit 1
+fi
 
 if [ -z "$1" ]; then
     echo "You are mising the comment"
