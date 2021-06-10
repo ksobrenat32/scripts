@@ -16,13 +16,13 @@ user_id=$(id -u)
 ###--------------------------------Functions--------------------------------
 
 function exist () {
-	if  ! [ -f $filename ]; then
-    	echo 
-		echo "The file $filename doesn't exist!"
-    	exit 1
-	fi
 	if [ -z "$filename" ]; then
     	echo "You are mising the file name."
+    	exit 1
+	fi
+	if  ! [ -f $filename ]; then
+    	echo 
+		echo "The file $filename doesn't exist."
     	exit 1
 	fi
 	}
@@ -30,7 +30,7 @@ function exist () {
 ###--------------------------------Script--------------------------------
 
 if [ -z "$VAR1" ]; then
-    echo "Maybe you should use '$VAR0 --help' for more info"
+    echo "Use '$VAR0 --help' for more info."
     exit 1
 fi
 # If VAR1 is --help, -h or -?, echo short help text and exit
@@ -63,17 +63,20 @@ fi
 
 case $VAR1 in
 	"-eF"|"eF")
+		# To encrypt a file with gpg
 		exist
 		gpg --symmetric $filename
 		EXIT=$?
 		;;
  	"-dF"|"dF")
+	 	# To decrypt a file with gpg
 		exist
 		namegpg=${filename%.gpg}
 		gpg --output $namegpg --decrypt $filename
 		EXIT=$?
 		;;
 	"-eD"|"eD")
+		# To encrypt a directorie with tar and gpg
 		exist
 		tar -cJf $filename.tar.xz $filename
 		gpg --symmetric $filename.tar.xz
@@ -81,6 +84,7 @@ case $VAR1 in
 		EXIT=$?
 		;;
 	"-dD"|"dD")
+		# To decrypt a directorie with tar and gpg
 		exist
 		namegpg=${filename%.gpg}
 		gpg --output $namegpg --decrypt $filename
@@ -89,6 +93,7 @@ case $VAR1 in
 		EXIT=$?
 		;;
 	"-crV"|"crV")
+		# To create an encrypted volume (size in MB)
 		if [ -z "$filename" ]; then
     		echo "You are mising the file name."
     		exit 1
@@ -105,6 +110,7 @@ case $VAR1 in
 		EXIT=$?
 		;;
 	"-oV"|"oV")
+		# To open an encrypted volume
 		exist
 		sudo cryptsetup open --type luks2 $filename $filename
 		mkdir luks-$filename
@@ -113,6 +119,7 @@ case $VAR1 in
 		EXIT=$?
 		;;
 	"-cV"|"cV")
+		# To close an encrypted volume
 		exist
 		sudo umount luks-$filename
 		sudo cryptsetup close $filename
@@ -125,5 +132,5 @@ esac
 
 if [ $EXIT -ne 0 ]; then
     echo
-    echo " Ooooups! Script ended with error code $EXIT!"
+    echo " Script ended with error code $EXIT!"
 fi
