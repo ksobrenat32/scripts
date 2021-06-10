@@ -1,0 +1,14 @@
+#! /usr/bin/env bash
+
+# Script for adding everything and pushing to a external git repositorie.
+
+set -e
+
+if [ -z "$1" ]; then
+    echo "You are mising the comment"
+    exit 1
+fi
+
+git add --all
+git commit -m "$1"
+git push -u origin main

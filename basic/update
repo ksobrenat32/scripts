@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+
+set -e
+
+# Script that updates all my desktop, using Debian.
+
+sudo apt update
+sudo apt upgrade -y
+sudo apt dist-upgrade -y
+sudo apt autoremove -y
+flatpak update -y
+sudo flatpak update -y
