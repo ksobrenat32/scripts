@@ -1,7 +1,7 @@
-#! /bin/bash
+#! /usr/bin/env bash
 
-## This script needs to be run as root
-## This script enables a zram module.
+# This script needs to be run as root
+# This script enables a zram module.
 
 set -e
 
@@ -20,8 +20,8 @@ if [ -z "$_size" ]; then
 fi
 
 if ! [[ $_size =~ $_re ]] ; then
-   echo "error: The size is not a number" 
-   exit 1
+    echo "error: The size is not a number" 
+    exit 1
 fi
 
 if (( "$_size" > "$_ram_size" )); then
