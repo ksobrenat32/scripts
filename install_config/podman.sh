@@ -9,6 +9,7 @@ __username=$(whoami)
 echo -e 'net.ipv4.ping_group_range=0 165535' | sudo tee /etc/sysctl.d/podman-ping.conf
 
 # Add podman registrie
+mkdir -p $HOME/.config/containers/
 echo -e "[registries.search]\nregistries = ['docker.io']" | tee $HOME/.config/containers/registries.conf
 
 # Enable linger for your user
