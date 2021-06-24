@@ -14,3 +14,6 @@ echo -e "[registries.search]\nregistries = ['docker.io']" | tee $HOME/.config/co
 
 # Enable linger for your user
 sudo loginctl enable-linger $__username
+
+# Install podman compose
+pip install -U podman-compose

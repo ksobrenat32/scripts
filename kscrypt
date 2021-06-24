@@ -20,7 +20,7 @@ function exist () {
     	echo "You are mising the file name."
     	exit 1
 	fi
-	if  ! [ -f $filename ]; then
+	if  ! [ -f $filename ] && ! [ -d $filename ]; then
     	echo 
 		echo "The file $filename doesn't exist."
     	exit 1
