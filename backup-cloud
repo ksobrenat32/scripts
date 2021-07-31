@@ -1,5 +1,7 @@
 #! /usr/bin/env bash
 
+set -e
+
 # This script makes automatic the compression, encryption and the upload, both to a mounted directorie and to a telegram channel
 # Usage: 	backup-cloud <file-or-directorie-to-backup>
 
