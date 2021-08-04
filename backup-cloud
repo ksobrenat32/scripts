@@ -32,6 +32,6 @@ if  ! [ -f $filename ] && ! [ -d $filename ]; then
     	exit 1
 fi
 
-7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -mhe=on -p"${_ps}" ${_md}/${filename}.7z $filename
+7z a -t7z -m0=lzma2 -mx=9 -mfb=64 -md=32m -ms=on -mhe=on -p"${_ps}" ${_md}/${filename}-$(date +"%Y-%m-%d").7z $filename
 telegram-cli -W --exec "msg ${_tg} ""${_msg}"
-telegram-cli -W --exec "send_file ${_tg} ""${_md}/${filename}.7z"
+telegram-cli -W --exec "send_file ${_tg} ""${_md}/${filename}-$(date +"%Y-%m-%d").7z"
