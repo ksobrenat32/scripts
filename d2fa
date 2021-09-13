@@ -1,0 +1,98 @@
+#! /usr/bin/env bash
+
+# ---
+# Script that creates a directorie where you can save 2FA keys encrypted with GPG, and view them when neccessary
+# By ksobrenatural (ksobrenat32 on github)
+# ---
+
+set -e
+
+# --- Variables
+
+VAR0=$(basename "$0")
+VAR1=$1
+VAR2=$2
+
+## Where configuration is saved
+_config="$HOME/.2fa/config"
+_dir="$HOME/.2fa/"
+
+# --- Functions
+
+function help () {
+	if [ -z "$VAR1" ]; then
+		echo "This script helps you manage 2fa codes, "
+		echo "'example.com' is the name of the service"
+		echo 
+    	echo "To print a 2fa code"
+		echo "	Format: '$VAR0 example.com'"
+		echo
+    	echo "To add 2fa key"
+		echo "	Format: '$VAR0 add example.com'"
+		echo
+    	echo "To configurate the script"
+		echo "	Format: '$VAR0 config'"
+		echo
+    	exit 1
+	fi
+}
+
+function chk_conf () {
+	if ! [ -f "${_config}" ]; then
+    	echo "You need to configure the script first."
+    	echo "RUN '$VAR0 config'"
+    	exit 1
+	else
+		source ${_config}
+	fi
+}
+
+function create_conf () {
+	mkdir -p ${_dir}
+	if ! [ -f "${_config}" ]; then
+		cat > ${_config} <<EOL
+# d2fa script configuration
+
+# Path where this are installed
+_gpg="/usr/bin/gpg2"
+_oathtool="/usr/bin/oathtool"
+
+# GPG ids, you can get them with "gpg --list-secret-keys --keyid-format LONG", 
+# if you dont have a key, create one "gpg --full-generate-key".
+_uid="" # Example: ksobrenatural (GPG key for ksobrenat32) <ksobrenatural@example.com>
+_kid="" # Example: N56N3EBEVY7E40CBK
+EOL
+		vim ${_config}
+
+	else
+		vim ${_config}
+	fi
+
+}
+
+# --- Script
+
+help
+
+case $VAR1 in
+	"add")
+		chk_conf
+		[ -f "${_dir}/${VAR2}/key.gpg" ] && { echo "Encrypted file exists."; exit 1; }
+		mkdir -p ${_dir}/${VAR2}
+		read -p "Write your 2fa key" key
+		echo -n "${key}" | tee ${_dir}/${VAR2}/key
+		$_gpg -u "${_kid}" -r "${_uid}" --encrypt "${_dir}/${VAR2}/key" 
+		rm -f "${_dir}/${VAR2}/key"
+	;;
+ 	"config")
+		create_conf
+	;;
+	*)
+		chk_conf
+		[ ! -f "${_dir}/${VAR1}/key.gpg" ] && { echo "Encrypted file for ${VAR1} not found."; exit 1; }
+		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR1}/key.gpg")
+		_code=$($_oathtool -b --totp "${_dkey}")
+		echo "The code for ${VAR1} is ${_code}"
+		[ -f "$k" ] && echo "Warning - Plain text key file ${_dir}/${VAR1}/key found."
+esac
+
