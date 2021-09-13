@@ -79,8 +79,8 @@ case $VAR1 in
 		chk_conf
 		[ -f "${_dir}/${VAR2}/key.gpg" ] && { echo "Encrypted file exists."; exit 1; }
 		mkdir -p ${_dir}/${VAR2}
-		read -p "Write your 2fa key" key
-		echo -n "${key}" | tee ${_dir}/${VAR2}/key
+		read -p "Write your 2fa key :" key
+		echo -n "${key}" | tee ${_dir}/${VAR2}/key > /dev/null
 		$_gpg -u "${_kid}" -r "${_uid}" --encrypt "${_dir}/${VAR2}/key" 
 		rm -f "${_dir}/${VAR2}/key"
 	;;
@@ -93,6 +93,8 @@ case $VAR1 in
 		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR1}/key.gpg")
 		_code=$($_oathtool -b --totp "${_dkey}")
 		echo "The code for ${VAR1} is ${_code}"
-		[ -f "$k" ] && echo "Warning - Plain text key file ${_dir}/${VAR1}/key found."
+		echo "${_code}" | xclip -selection c
+		echo "Copied to clipboard :)"
+		[ -f "${_dir}/${VAR1}/key" ] && echo "Warning - Plain text key file ${_dir}/${VAR1}/key found."
 esac
 
