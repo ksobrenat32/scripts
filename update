@@ -1,17 +1,18 @@
 #! /usr/bin/env bash
 
-set -e
-
 # Script that updates a desktop, with apt, dnf or pacman and also flatpak.
 
-if [ -x "$(command -v apt)" ];       then sudo apt update && sudo apt upgrade && sudo apt autoremove
-elif [ -x "$(command -v dnf)" ];     then sudo dnf update
-elif [ -x "$(command -v pacman)" ];  then sudo pacman -Syu
-
+## Common package manager
+if [ -x "$(command -v apt)" ];       then echo " --- Upgrading with apt" && sudo apt update && sudo apt upgrade && sudo apt autoremove
+elif [ -x "$(command -v dnf)" ];     then echo " --- Upgrading with dnf" && sudo dnf update
+elif [ -x "$(command -v pacman)" ];  then echo " --- Upgrading with pacman" && sudo pacman -Syu
 else echo "Failed to identy package manager :(, upgrade by yourself"; fi
 
-flatpak --user update -y
-sudo flatpak update -y
+## If having flatpak
+[ -x "$(command -v flatpak)" ] && echo " --- Upgrading flatpak" && flatpak --user update && sudo flatpak update
 
-echo "Done ;)"
+## If having toolbox
+[ -x "$(command -v toolbox)" ] && echo " --- Upgrading toolbox" && toolbox run sudo dnf upgrade -y
+
+echo " --- Done ;)"
 
