@@ -11,8 +11,6 @@ else echo "Failed to identy package manager :(, upgrade by yourself"; fi
 ## If having flatpak
 [ -x "$(command -v flatpak)" ] && echo " --- Upgrading flatpak" && flatpak --user update && sudo flatpak update
 
-## If having toolbox
-[ -x "$(command -v toolbox)" ] && echo " --- Upgrading toolbox" && toolbox run sudo dnf upgrade -y
 
 echo " --- Done ;)"
 

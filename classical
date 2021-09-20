@@ -1,8 +1,8 @@
 #! /usr/bin/env bash
 
-# Script for listening to classical music (I have mpv on flatpak so change that if you dont)
+# Script for listening to classical music 
 # Credits: BugsWriter on YouTube https://www.youtube.com/channel/UCngn7SVujlvskHRvRKc1cTw 
 
 url=https://live.musopen.org:8085/streamvbr0
 
-pkill -f ${url} || flatpak run io.mpv.Mpv ${url}
+pkill -f ${url} || mpv ${url}
