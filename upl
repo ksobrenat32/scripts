@@ -2,13 +2,6 @@
 
 set -e
 
-VERSION=2.0-2
-
-# Copyright (C) 2020 Pontus Falk
-
-# Put 0x0.sh in /usr/local/bin directory or make a symbolic link in
-# /usr/local/bin to the file wherever it is located.
-
 # MIT License
 
 # Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -33,24 +26,26 @@ VAR0=$(basename "$0")
 VAR1=$1
 VAR2=$2
 
-# If no options are given, echo shorter help text and exit
-if [ -z "$VAR1" ]; then
-	echo "Use '$VAR0 --help' for more info"
-	exit 1
+# If this is running non interactively
+if ! tty -s; then
+	if [ "$VAR1" = "-e" ]; then
+		URL=$(gpg -ac -o- | curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0.gpg)
+	else
+		URL=$(curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0)
+	fi	
+	echo "The url is $URL , it is on clipboard" 
+	echo "$URL"| xclip -selection c
+	exit 0
 fi
 
-# If VAR1 is --help, -h or -?, echo short help text and exit
-if [ "$VAR1" = "--help" ] || [ "$VAR1" = "-help" ] || [ "$VAR1" = "-h" ] || [ "$VAR1" = "-?" ]; then
+# If VAR1 is empty, --help, -h or -?, echo short help text and exit
+if [ -z "$VAR1" ] || [ "$VAR1" = "--help" ] || [ "$VAR1" = "-help" ] || [ "$VAR1" = "-h" ] || [ "$VAR1" = "-?" ]; then
 	echo "To upload files from your computer:"
 	echo
-	echo "	Format: '$VAR0 [option] [directory/]filename.ext'."
+	echo "	Format: '$VAR0 [option] [directory/]filename'."
 	echo
-	echo "	Option -d: default setting"
-	echo "	       -#: show progress-bar"
-	echo "	       -s: silent mode (supress errors)"
-	echo "	       -S: silten mode (show errors)"
 	echo
-	echo "To shorten long URL:s:"
+	echo "To shorten long URLs:"
 	echo
 	echo "	Format: '$VAR0 -short https://example.com/directory'."
 	echo
@@ -63,7 +58,6 @@ fi
 # URL shortener
 if [ "$VAR1" = "-short" ]; then
 	URL=$(curl --fail -F shorten="$VAR2" -- https://0x0.st/) ; EXIT=$?
-	echo -n "$URL"
 	if [ "$URL" != "Segmentation fault" ]; then
 		echo
 		echo "The short URL for '$VAR2' is '$URL'!"
@@ -81,7 +75,6 @@ fi
 # Upload remote file to 0x0.st
 if [ "$VAR1" = "-remote" ]; then
 	URL=$(curl --fail -F url="$VAR2" -- https://0x0.st/) ; EXIT=$?
-	echo -n "$URL"
 	if ! [ "${URL:0:1}" = "<" ] && ! [ "${URL:0:1}" = "4" ]; then
 		echo
 		echo "File '$VAR2' is uploaded as '$URL'"
@@ -106,43 +99,23 @@ if ! [ -f "$VAR1" ] && ! [ -f "$VAR2" ]; then
 	exit 1
 fi
 
-# If file to transfer is in first option then move it to VAR2 and put CONFIG1 in VAR1
+# If file to transfer is in first option then move it to VAR2
 if [ -f "$VAR1" ]; then
 	VAR2=$VAR1
-
-	# If CONFIG1 is empty (no alternative given in ~/.0x0rc then put -d in VAR1
-	if [ "$CONFIG1" ]; then
-		VAR1=$CONFIG1
-	else
-		VAR1="-d"
-	fi
 fi
 
-# Time to set how to use curl
-case $VAR1 in
-	"-d")
-		URL=$(curl --fail -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
-		;;
- 	"-#")
-		URL=$(curl --fail -# -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
-		;;
-	"-s")
-		URL=$(curl --fail -s -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
-		;;
-	"-S")
-		URL=$(curl --fail -s -S -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
-		;;
-	*)
-		echo "*** Unsupported option '$VAR1', continue with default setting"
-		echo
-		URL=$(curl --fail -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
-esac
+# If encrypted
+if [ "$VAR1" = "-e" ]; then
+	URL=$(cat $VAR2 | gpg -ac -o- | curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0.gpg) ; EXIT=$?
+else
+	URL=$(curl --fail -H "Max-Days: 1" --upload-file "$VAR2" https://transfer.sh/) ; EXIT=$?
+fi
 
 # Transfer file using curl and copy URL returned to clipboard
-echo -n "$URL"
-if [ $EXIT -eq 0 ]; then
+if [[ $EXIT -eq 0 ]]; then
 	echo
 	echo "Uploading of '$VAR2' is done. The URL is '$URL'"
+	echo "$URL" | xclip -selection c
 else
         echo
         echo "*** Script ended with error code $EXIT"
