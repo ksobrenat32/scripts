@@ -26,12 +26,20 @@ VAR0=$(basename "$0")
 VAR1=$1
 VAR2=$2
 
+# This uses 0x0 and a sharing files alternative https://github.com/beleon/buckets
+# You can use only 0x0 modifying this script
+
+# Configure this variable with your selfhosted buckets url :)
+#BUCKET_URL=https://Your.Selfhosted.BUCKET_URL.com
+# or 
+source ~/.config/user_var
+
 # If this is running non interactively
 if ! tty -s; then
 	if [ "$VAR1" = "-e" ]; then
-		URL=$(gpg -ac -o- | curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0.gpg)
+		URL=$(gpg -ac -o- | curl --fail -X POST --data-binary @- "${BUCKET_URL}")
 	else
-		URL=$(curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0)
+		URL=$(curl --fail -X POST --data-binary @- "${BUCKET_URL}")
 	fi	
 	echo "The url is $URL , it is on clipboard" 
 	echo "$URL"| xclip -selection c
@@ -106,9 +114,9 @@ fi
 
 # If encrypted
 if [ "$VAR1" = "-e" ]; then
-	URL=$(cat $VAR2 | gpg -ac -o- | curl -X PUT -H "Max-Days: 1" --upload-file "-" https://transfer.sh/0.gpg) ; EXIT=$?
+	URL=$(cat $VAR2 | gpg -ac -o- | curl --fail -X POST --data-binary @- "${BUCKET_URL}") ; EXIT=$?
 else
-	URL=$(curl --fail -H "Max-Days: 1" --upload-file "$VAR2" https://transfer.sh/) ; EXIT=$?
+	URL=$(curl --fail -X POST --data-binary "@$VAR2" "${BUCKET_URL}") ; EXIT=$?
 fi
 
 # Transfer file using curl and copy URL returned to clipboard
