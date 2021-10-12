@@ -51,7 +51,18 @@ if [ -z "$VAR1" ] || [ "$VAR1" = "--help" ] || [ "$VAR1" = "-help" ] || [ "$VAR1
 	echo "To upload files from your computer:"
 	echo
 	echo "	Format: '$VAR0 [option] [directory/]filename'."
-	echo
+	echo 
+	echo "To encrypt uploaded file:"
+	echo 
+	echo "	Format: '$VAR0 -e filename'."
+	echo 
+	echo "To delete previously uploaded file:"
+	echo 
+	echo "	Format: '$VAR0 -d filename'."
+	echo 
+	echo "To force 0x0.st:"
+	echo 
+	echo "	Format: '$VAR0 -0 filename'."
 	echo
 	echo "To shorten long URLs:"
 	echo
@@ -112,12 +123,25 @@ if [ -f "$VAR1" ]; then
 	VAR2=$VAR1
 fi
 
-# If encrypted
-if [ "$VAR1" = "-e" ]; then
-	URL=$(cat $VAR2 | gpg -ac -o- | curl --fail -X POST --data-binary @- "${BUCKET_URL}") ; EXIT=$?
-else
-	URL=$(curl --fail -X POST --data-binary "@$VAR2" "${BUCKET_URL}") ; EXIT=$?
-fi
+# If option declared
+case $VAR1 in
+	"-e")
+		URL=$(cat $VAR2 | gpg -ac -o- | curl --fail -X POST --data-binary @- "${BUCKET_URL}${VAR2}.gpg") ; EXIT=$?
+		;;
+	"-d")
+		curl -X DELETE "${BUCKET_URL}${VAR2}"
+		echo "Done deleting ${VAR2}"
+		exit 0
+		;;
+	"-0")
+		URL=$(curl --fail -F file=@"$VAR2" -- https://0x0.st/) ; EXIT=$?
+		;;
+	"-0e"|"-e0")
+		URL=$(cat $VAR2 | gpg -ac -o- | curl --fail -F file=@- -- https://0x0.st/) ; EXIT=$?
+		;;
+	*)
+		URL=$(curl --fail -X POST --data-binary "@$VAR2" "${BUCKET_URL}${VAR2}") ; EXIT=$?
+esac
 
 # Transfer file using curl and copy URL returned to clipboard
 if [[ $EXIT -eq 0 ]]; then
