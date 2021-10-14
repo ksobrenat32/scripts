@@ -1,0 +1,29 @@
+#! /usr/bin/env bash
+
+set -e
+
+# Work in progress :)
+
+# If $1 is empty, --help, -h or -?, echo short help text and exit
+VAR0=$(basename "$0")
+
+if [ -z "$1" ] || [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    echo "Script for 'compiling' without having to remember how."
+    echo 
+    echo "For compiling just use."
+    echo "	Format: '$VAR0 file'"
+    echo 
+    exit 1
+fi
+
+# If it is written in C
+if [[ $1 == *.c ]]; then
+    gcc -g3 -o3 -Wall -Werror -pipe "$1" -o "${1%.c}.o"
+    exit 0
+fi
+
+# If it is written in Java
+if [[ $1 == *.java ]]; then
+    javac $1
+    exit 0
+fi
