@@ -6,40 +6,40 @@ set -e
 # With "e" refering to an encrypted drive and "g" to a non encrypted.
 
 case $1 in
-	"-e"|"e") mkdir /tmp/rmnt && sudo rclone mount \
+	"-e"|"e") mkdir /mnt && sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
 	  	--vfs-cache-max-size=1000M \
 	  	--daemon \
-	  	edrive: /tmp/rmnt
+	  	edrive: /mnt
 		exit 0 ;;
-	"-ero"|"ero"|"-roe"|"roe" ) mkdir /tmp/rmnt && sudo rclone mount \
+	"-ero"|"ero"|"-roe"|"roe" ) mkdir /mnt && sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
 	  	--vfs-cache-max-size=1000M \
 	  	--daemon \
 		--read-only \
-	  	edrive: /tmp/rmnt
+	  	edrive: /mnt
 		exit 0 ;;
-	"-ro"|"ro") mkdir /tmp/rmnt && sudo rclone mount \
+	"-ro"|"ro") mkdir /mnt && sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
 	  	--vfs-cache-max-size=1000M \
 	  	--daemon \
 		--read-only \
-	  	gdrive: /tmp/rmnt
+	  	gdrive: /mnt
 		exit 0 ;;
-	"c"|"-c"|"u"|"-u") sudo fusermount -u /tmp/rmnt  && rm -r /tmp/rmnt ;;
-	"") 	mkdir /tmp/rmnt && sudo rclone mount \
+	"c"|"-c"|"u"|"-u") sudo fusermount -u /mnt ;;
+	"") 	mkdir /mnt && sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
 	  	--vfs-cache-max-size=1000M \
 	  	--daemon \
-	  	gdrive: /tmp/rmnt
+	  	gdrive: /mnt
 		exit 0 ;;
 esac
 
