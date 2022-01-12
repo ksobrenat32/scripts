@@ -6,7 +6,7 @@ set -e
 # With "e" refering to an encrypted drive and "g" to a non encrypted.
 
 case $1 in
-	"-e"|"e") mkdir /mnt && sudo rclone mount \
+	"-e"|"e") sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
@@ -14,7 +14,7 @@ case $1 in
 	  	--daemon \
 	  	edrive: /mnt
 		exit 0 ;;
-	"-ero"|"ero"|"-roe"|"roe" ) mkdir /mnt && sudo rclone mount \
+	"-ero"|"ero"|"-roe"|"roe" ) sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
@@ -23,7 +23,7 @@ case $1 in
 		--read-only \
 	  	edrive: /mnt
 		exit 0 ;;
-	"-ro"|"ro") mkdir /mnt && sudo rclone mount \
+	"-ro"|"ro") sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
@@ -33,7 +33,7 @@ case $1 in
 	  	gdrive: /mnt
 		exit 0 ;;
 	"c"|"-c"|"u"|"-u") sudo fusermount -u /mnt ;;
-	"") 	mkdir /mnt && sudo rclone mount \
+	"") 	sudo rclone mount \
 	  	--config=/root/.config/rclone/rclone.conf \
 	  	--allow-other \
 	  	--vfs-cache-mode=full \
