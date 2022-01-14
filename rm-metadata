@@ -1,0 +1,33 @@
+#! /usr/bin/env bash
+set -e
+
+# Script for removing metadata from video files in mp4.
+
+# TODO
+# - Add support for other formats than mp4
+
+# If $1 is empty, --help, -h or -?, echo short help text and exit
+VAR0=$(basename "$0")
+if [ -z "$1" ] || [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
+    echo "Script for removing metadata from a video in mp4 format."
+    echo 
+    echo "For removing metadata from a mp4 file, run:"
+    echo "	Format: '$VAR0 file'"
+    echo 
+    exit 1
+fi
+
+if ! [ -f "$1" ]; then
+    echo " $1 is not a file"
+    exit 1
+
+# Change name for working file
+file_name=$1
+tmp_name=$(echo "${file_name}.undone.mp4")
+mv "$file_name" "$tmp_name"
+
+# Remove metadata
+ffmpeg -i "$tmp_name" -map_metadata -1 -fflags +bitexact -flags:v +bitexact -flags:a +bitexact -c:v copy -c:a copy -c:s copy "$file_name"
+
+# Move to new place
+rm "$tmp_name"

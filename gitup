@@ -7,9 +7,6 @@ VAR0=$(basename "$0")
 if [ "$1" = "--help" ] || [ "$1" = "-help" ] || [ "$1" = "-h" ] || [ "$1" = "-?" ]; then
     echo "Script for common git commands."
     echo 
-    echo "For just adding everything."
-    echo "	Format: '$VAR0 add'"
-    echo 
     echo "For adding everything and pushing to a external git repositorie."
     echo "	Format: '$VAR0 comment for the commit'"
     exit 1
@@ -22,9 +19,9 @@ fi
 
 for i in "$*"
 	do 
-	_all="${_all} $i"
+	_comment="${_comment} $i"
 done
 
 git add --all
-git commit -S -m "$_all"
-git push -u origin main
+git commit -S -m "$_comment"
+git push
