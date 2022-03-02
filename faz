@@ -1,0 +1,198 @@
+#! /bin/bash
+
+set -e
+
+# Script for creating a testing virtual machine on Azure
+# with azurecli on a distrobox container.
+
+# General config, you will probably do not need to change
+# this but if you do, do it with enviroment variables
+
+# export FAZ_AZURE_LOCATION="eastus"
+if [[ -z "${FAZ_AZURE_LOCATION}" ]]; then
+    AZURE_LOCATION="eastus2"
+else
+    AZURE_LOCATION="${FAZ_AZURE_LOCATION}"
+fi
+
+# export FAZ_VM_USER="azureuser"
+if [[ -z "${FAZ_VM_USER}" ]]; then
+    AZURE_VM_USER="azureuser"
+else
+    AZURE_VM_USER="${FAZ_VM_USER}"
+fi
+
+# export FAZ_SSHKEY="~/.ssh/id_rsa"
+if [[ -z "${FAZ_SSHKEY}" ]]; then
+    AZURE_VM_SSHKEY_PATH="~/.ssh/id_rsa.pub"
+else
+    AZURE_VM_SSHKEY_PATH="${FAZ_SSHKEY}"
+fi
+
+function vmData(){
+    # Ask the size of the vm to create
+    while true; do
+    	read -r -p "What size of vm you want? B1s or B2s [1/2]: " cSize
+        case $cSize in
+            "1") AZURE_SIZE="Standard_B1s" ; break ;;  
+            "2") AZURE_SIZE="Standard_B2s" ; break ;;
+            *) echo "Choose a valid option [1/2]"
+        esac
+    done
+    # Ask for the resource name, it will remove the non alphanumeric characters and limit to 20 characters
+    read -r -p "Name of the ResourceGroup:" USER_AZURE_RESOURCEGROUP
+    AZURE_RESOURCEGROUP=$(echo "$USER_AZURE_RESOURCEGROUP" | LC_ALL=C tr -dc 'A-Za-z0-9' | head -c 20)
+}
+
+case $1 in
+    "-d"|"d"|"-del"|"--delete"|"delete")        
+        echo "
+    Active resource-groups are:
+    $(/usr/bin/distrobox-enter -n azure -- /usr/bin/az group list --output tsv | awk '{print $4}' | sed 's/ //g')
+        "
+        read -r -p "ResourceGroup to Delete:" AZURE_RESOURCEGROUP
+        echo "Deleting ${AZURE_RESOURCEGROUP} resource group."
+        /usr/bin/distrobox-enter -n azure -- /usr/bin/az group delete --name ${AZURE_RESOURCEGROUP}
+        
+        echo "Deleting NetworkWatcherRG"
+        /usr/bin/distrobox-enter -n azure -- /usr/bin/az group delete --name NetworkWatcherRG
+        
+        echo "Active resource-groups are:"
+        /usr/bin/distrobox-enter -n azure -- /usr/bin/az group list --output tsv | awk '{print $4}'
+        exit 0 
+        ;;
+    "-al"|"al"|"-alma"|"alma")
+	echo "Creating AlmaLinux Virtual Machine"
+        AZURE_IMAGE="almalinux:almalinux:8_5-gen2:latest"
+        vmData
+	;;
+    *|"-deb"|"debian")
+	echo "Creating Debian Virtual Machine"
+        AZURE_IMAGE="Debian:debian-11-daily:11-gen2:latest"
+        vmData
+        ;;
+esac
+
+AZURE_VM="${AZURE_RESOURCEGROUP}-VM"
+AZURE_VNET="${AZURE_RESOURCEGROUP}-vNet"
+AZURE_SUBNET="${AZURE_RESOURCEGROUP}-subNet"
+AZURE_PIPV4="${AZURE_RESOURCEGROUP}-PublicIP-IPv4"
+AZURE_PIPV6="${AZURE_RESOURCEGROUP}-PublicIP-IPv6"
+AZURE_PIPV6C="${AZURE_RESOURCEGROUP}-PublicIP-IPv6-config"
+AZURE_NSG="${AZURE_RESOURCEGROUP}-NSG"
+AZURE_NSGRAI="${AZURE_RESOURCEGROUP}-NSGRuleAllIn"
+AZURE_NSGRAO="${AZURE_RESOURCEGROUP}-NSGRuleAllOut"
+AZURE_NIC1="${AZURE_RESOURCEGROUP}-NIC1"
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az group create \
+    --name ${AZURE_RESOURCEGROUP} \
+    --location ${AZURE_LOCATION}
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network vnet create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --location ${AZURE_LOCATION} \
+    --name ${AZURE_VNET} \
+    --address-prefixes 10.0.0.0/16 2404:f800:8000:122::/63 \
+    --subnet-name ${AZURE_SUBNET} \
+    --subnet-prefixes 10.0.0.0/24 2404:f800:8000:122::/64
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network public-ip create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_PIPV4} \
+    --sku Standard \
+    --version IPv4
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network public-ip create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_PIPV6} \
+    --sku Standard \
+    --version IPv6
+
+ /usr/bin/distrobox-enter -n azure -- /usr/bin/az network nsg create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_NSG}
+
+ACTUALDIR=$(pwd)
+TEMPDIR=$(mktemp -d)
+
+cd $TEMPDIR
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network nsg rule create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --nsg-name ${AZURE_NSG} \
+    --name ${AZURE_NSGRAI} \
+    --protocol '*' \
+    --direction inbound \
+    --source-address-prefix '*' \
+    --source-port-range '*' \
+    --destination-address-prefix '*' \
+    --destination-port-range  '*' \
+    --access allow \
+    --priority 200
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network nsg rule create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --nsg-name ${AZURE_NSG} \
+    --name ${AZURE_NSGRAO} \
+    --protocol '*' \
+    --direction outbound \
+    --source-address-prefix '*' \
+    --source-port-range '*' \
+    --destination-address-prefix '*' \
+    --destination-port-range '*' \
+    --access allow \
+    --priority 200
+
+cd $ACTUALDIR
+rm -r $TEMPDIR
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network nic create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_NIC1} \
+    --vnet-name ${AZURE_VNET} \
+    --subnet ${AZURE_SUBNET} \
+    --network-security-group ${AZURE_NSG} \
+    --public-ip-address ${AZURE_PIPV4}
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az network nic ip-config create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_PIPV6C} \
+    --nic-name ${AZURE_NIC1} \
+    --private-ip-address-version IPv6 \
+    --vnet-name ${AZURE_VNET} \
+    --subnet ${AZURE_SUBNET} \
+    --public-ip-address ${AZURE_PIPV6}
+
+/usr/bin/distrobox-enter -n azure -- /usr/bin/az vm create \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_VM} \
+    --nics ${AZURE_NIC1} \
+    --image ${AZURE_IMAGE} \
+    --admin-username ${AZURE_VM_USER} \
+    --size ${AZURE_SIZE} \
+    --authentication-type ssh \
+    --ssh-key-values ${AZURE_VM_SSHKEY_PATH}
+
+PUBLIC_IP_IPV4=$(/usr/bin/distrobox-enter -n azure -- /usr/bin/az network public-ip show \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_PIPV4} \
+    --query ipAddress \
+    --output tsv)
+
+PUBLIC_IP_IPV6=$(/usr/bin/distrobox-enter -n azure -- /usr/bin/az network public-ip show \
+    --resource-group ${AZURE_RESOURCEGROUP} \
+    --name ${AZURE_PIPV6} \
+    --query ipAddress \
+    --output tsv)
+    
+
+echo "
+The user is: ${AZURE_VM_USER}
+echo 'Your IPs are: ${PUBLIC_IP_IPV4} and ${PUBLIC_IP_IPV6}'
+
+SSH:
+  IPV4
+    ssh ${AZURE_VM_USER}@${PUBLIC_IP_IPV4}
+  IPV6
+    ssh ${AZURE_VM_USER}@${PUBLIC_IP_IPV6}
+"
