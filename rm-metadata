@@ -20,6 +20,7 @@ fi
 if ! [ -f "$1" ]; then
     echo " $1 is not a file"
     exit 1
+fi
 
 # Change name for working file
 file_name=$1
