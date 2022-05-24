@@ -14,8 +14,8 @@ VAR1=$1
 VAR2=$2
 
 ## Where configuration is saved
-_config="$HOME/.2fa/config"
-_dir="$HOME/.2fa/"
+_dir="$HOME/.config/2fa"
+_config="${_dir}/config"
 
 # --- Functions
 
