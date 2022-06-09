@@ -1,0 +1,44 @@
+#! /usr/bin/env bash
+
+set -eo pipefail
+
+# This script works for encrypting files or directories using gpg symmetric
+# encryption and tar with xz-utils to compress it
+# Put this script in /usr/local/bin directory or other place in PATH.
+
+fileName=$1
+
+# If VAR1 is --help, -h or -?, echo short help text and exit
+if [ "$fileName" = "--help" ] || [ "$fileName" = "-help" ] || [ "$fileName" = "-h" ] || [ "$fileName" = "-?" ]; then
+    echo "
+This script works for encrypting files or directories using gpg symmetric
+encryption and tar with xz-utils to compress it.
+
+    To compress and encrypt a file or directory:
+        $(basename "$0") file
+    To decrypt and unencrypt:
+        $(basename "$0") file.txz.gpg
+    "
+    exit 1
+fi
+
+if [ -z "$fileName" ]; then
+    echo "You are mising the file name."
+    exit 1
+fi
+if  ! [ -f $fileName ] && ! [ -d $fileName ]; then
+    echo "The file $fileName doesn't exist."
+    exit 1
+fi
+
+if [ "${fileName: -8}" == ".txz.gpg" ]; then
+    namegpg=${fileName%.gpg}
+    gpg --output $namegpg --decrypt $fileName
+    tar xJf $namegpg
+    rm $namegpg
+else
+    fileName=$(echo "$fileName" | sed 's:/*$::' )
+    tar cf - "$fileName" | xz -z -T0 -9 > "${fileName}.txz"
+    gpg --symmetric "${fileName}.txz"
+    rm "${fileName}.txz"
+fi
