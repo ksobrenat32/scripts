@@ -21,18 +21,19 @@ _config="${_dir}/config"
 
 function help () {
 	if [ -z "$VAR1" ]; then
-		echo "This script helps you manage 2fa codes, "
-		echo "'example.com' is the name of the service"
-		echo 
-    	echo "To print a 2fa code"
-		echo "	Format: '$VAR0 example.com'"
-		echo
-    	echo "To add 2fa key"
-		echo "	Format: '$VAR0 add example.com'"
-		echo
-    	echo "To configurate the script"
-		echo "	Format: '$VAR0 config'"
-		echo
+		echo "
+This script helps you manage 2fa codes,
+'example.com' is the name of the service
+
+To print a 2fa code
+	Format: '$VAR0 example.com'
+To add 2fa key
+	Format: '$VAR0 add example.com'
+To get the 2fa secret key (WARNING, do not do it in a insecure enviroment)
+	Format: '$VAR0 secret example.com'
+To edit the configuration file of the script
+	Format: '$VAR0 config'
+"
     	exit 1
 	fi
 }
@@ -59,7 +60,7 @@ _oathtool="/usr/bin/oathtool"
 
 # GPG ids, you can get them with "gpg --list-secret-keys --keyid-format LONG", 
 # if you dont have a key, create one "gpg --full-generate-key".
-_uid="" # Example: ksobrenatural (GPG key for ksobrenat32) <ksobrenatural@example.com>
+_uid="" # Example: JohnDoe (GPG key for John Doe) <johndoe@example.com>
 _kid="" # Example: N56N3EBEVY7E40CBK
 EOL
 		vim ${_config}
@@ -83,6 +84,17 @@ case $VAR1 in
 		echo -n "${key}" | tee ${_dir}/${VAR2}/key > /dev/null
 		$_gpg -u "${_kid}" -r "${_uid}" --encrypt "${_dir}/${VAR2}/key" 
 		rm -f "${_dir}/${VAR2}/key"
+	;;
+ 	"secret")
+		chk_conf
+		[ ! -f "${_dir}/${VAR2}/key.gpg" ] && { echo "Encrypted file for ${VAR2} not found."; exit 1; }
+		echo "Warning - Plain text key will be displayed."
+                read -p "Are you sure? " -n 1 -r; echo
+                if [[ ! $REPLY =~ ^[Yy]$ ]]; then
+                    exit 1
+                fi
+		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR2}/key.gpg")
+		echo "The secret for ${VAR2} is ${_dkey}"
 	;;
  	"config")
 		create_conf
