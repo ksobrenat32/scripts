@@ -1,0 +1,12 @@
+#! /usr/bin/env bash
+set -e
+
+# Script for reencoding all mkv files on the local directory to a
+# format that is compatible with almost all video clients.
+
+# TODO
+# - Add a check in case it fails
+
+# Reencoding mkv files to a widely compatible mp4 video format
+for i in *.mkv; do ffmpeg -i "$i" -map 0 -c:v libx264 -c:a aac -c:s mov_text "${i%.*}.mp4"; done
+
