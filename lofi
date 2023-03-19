@@ -1,0 +1,8 @@
+#! /usr/bin/env bash
+
+# Script for listening to lofi music
+# from youtube
+
+url=https://www.youtube.com/watch?v=jfKfPfyJRdk
+
+pkill -f "mpv" || flatpak run io.mpv.Mpv --no-video ${url}
