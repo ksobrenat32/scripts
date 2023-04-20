@@ -28,7 +28,7 @@ tmp_name=$(echo "${file_name}.undone.mp4")
 mv "$file_name" "$tmp_name"
 
 # Remove metadata
-ffmpeg -i "$tmp_name" -metadata title='' -fflags +bitexact -flags:v +bitexact -flags:a +bitexact -c:v copy -c:a copy -c:s copy -map 0 "$file_name"
+ffmpeg -i "$tmp_name" -map_metadata -1 -fflags +bitexact -flags:v +bitexact -flags:a +bitexact -c:v copy -c:a copy -c:s copy -map 0 "$file_name"
 
 # Move to new place
 rm "$tmp_name"
