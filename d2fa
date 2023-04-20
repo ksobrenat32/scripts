@@ -1,7 +1,8 @@
 #! /usr/bin/env bash
 
 # ---
-# Script that creates a directorie where you can save 2FA keys encrypted with GPG, and view them when neccessary
+# Script that creates a directorie where you can save 2FA keys
+# encrypted with GPG, and view them when neccessary.
 # By ksobrenatural (ksobrenat32 on github)
 # ---
 
@@ -14,7 +15,7 @@ VAR1=$1
 VAR2=$2
 
 ## Where configuration is saved
-_dir="$HOME/.config/2fa"
+_dir="$HOME/.config/d2fa"
 _config="${_dir}/config"
 
 # --- Functions
