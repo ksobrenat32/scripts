@@ -1,0 +1,11 @@
+# File to set autocompletion for the d2fa scipt
+_d2fa() {
+    local file
+    for file in ~/.config/d2fa/"$2"*; do
+        [[ -d $file ]] || continue
+        COMPREPLY+=( $(basename "$file") )
+    done
+}
+
+# Set to script
+complete -F _d2fa d2fa
