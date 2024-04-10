@@ -1,0 +1,49 @@
+#!/usr/bin/env bash
+
+set -eou pipefail
+
+# Script for generating usernames based on greek's mythology gods and goddesses.
+# Usage: ./user-generator
+
+# Greek gods and goddesses
+greek_gods=(
+    "zeus"
+    "hera"
+    "poseidon"
+    "demeter"
+    "athena"
+    "apollo"
+    "artemis"
+    "ares"
+    "aphrodite"
+    "hephaestus"
+    "hermes"
+    "dionysus"
+    "hestia"
+    "hades"
+    "persephone"
+    "hecate"
+    "pan"
+    "nike"
+    "nemesis"
+    "eros"
+    "thanatos"
+    "iris"
+    "hypnos"
+    "morpheus"
+    "helios"
+    "selene"
+    "hecate"
+    "triton"
+    "nereus"
+    "tyche"
+)
+
+# Generate a random number between 0 and length of the array
+random_number=$((RANDOM % ${#greek_gods[@]}))
+
+# Generate a random number from 00 to 99
+random_number_2=$((RANDOM % 100))
+
+# Print generated name
+echo "${greek_gods[$random_number]}-${random_number_2}"
