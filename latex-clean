@@ -1,0 +1,35 @@
+#! /usr/bin/env bash
+
+# ---
+# Script that compiles a latex pdf creating the tmp
+# files in /tmp and deleting after generating the pdf
+# By ksobrenatural (ksobrenat32 on github)
+# ---
+
+set -eou pipefail
+
+# --- Variables
+
+TMP_DIR=$(mktemp -d)
+TEX_FILE=$1
+
+# --- Functions
+
+function file_exists {
+    if [ ! -f $1 ]; then
+        echo "File $1 does not exist"
+        exit 1
+    fi
+}
+
+function compile_pdf {
+    pdflatex -output-directory ${TMP_DIR} $1
+    pdflatex -output-directory ${TMP_DIR} $1
+    pdflatex -output-directory ${TMP_DIR} $1
+    mv ${TMP_DIR}/*.pdf .
+    rm -rf ${TMP_DIR}
+}
+
+# --- Main
+file_exists $TEX_FILE
+compile_pdf $TEX_FILE
