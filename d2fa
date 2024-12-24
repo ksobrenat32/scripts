@@ -32,6 +32,8 @@ To add 2fa key
 	Format: '$VAR0 add example.com'
 To get the 2fa secret key (WARNING, do not do it in a insecure enviroment)
 	Format: '$VAR0 secret example.com'
+To show the QR code to add the 2fa key to a authenticator app
+	Format: '$VAR0 show_qr example.com'
 To edit the configuration file of the script
 	Format: '$VAR0 config'
 "
@@ -58,6 +60,7 @@ function create_conf () {
 # Path where this are installed
 _gpg="/usr/bin/gpg2"
 _oathtool="/usr/bin/oathtool"
+_qrencode="/usr/bin/qrencode"
 
 # GPG ids, you can get them with "gpg --list-secret-keys --keyid-format LONG", 
 # if you dont have a key, create one "gpg --full-generate-key".
@@ -96,6 +99,15 @@ case $VAR1 in
                 fi
 		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR2}/key.gpg")
 		echo "The secret for ${VAR2} is ${_dkey}"
+	;;
+	"show_qr")
+		chk_conf
+		[ ! -f "${_dir}/${VAR2}/key.gpg" ] && { echo "Encrypted file for ${VAR2} not found."; exit 1; }
+		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR2}/key.gpg")
+		# Trim spaces
+		_dkey=$(echo -n "${_dkey}" | tr -d '[:space:]')
+		# otpauth://totp/<ACCOUNT>?secret=<SECRET>&issuer=<WEBSITE>
+		$_qrencode -t ANSIUTF8 "otpauth://totp/${VAR2}?secret=${_dkey}"
 	;;
  	"config")
 		create_conf
