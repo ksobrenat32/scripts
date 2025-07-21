@@ -5,4 +5,4 @@
 
 url=https://www.youtube.com/watch?v=jfKfPfyJRdk
 
-pkill -f "mpv" || flatpak run io.mpv.Mpv --no-video ${url}
+pkill -f "mpv" || mpv --no-video ${url}

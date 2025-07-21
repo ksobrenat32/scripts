@@ -5,4 +5,4 @@
 
 url=https://live.musopen.org:8085/streamvbr0
 
-pkill -f ${url} || flatpak run io.mpv.Mpv ${url}
+pkill -f ${url} || mpv ${url}
