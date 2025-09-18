@@ -118,7 +118,7 @@ case $VAR1 in
 		_dkey=$($_gpg --quiet -u "${kid}" -r "${uid}" --decrypt "${_dir}/${VAR1}/key.gpg")
 		_code=$($_oathtool -b --totp "${_dkey}")
 		echo "The code for ${VAR1} is ${_code}"
-		echo "${_code}" | xclip -selection c
+		echo "${_code}" | wl-copy
 		echo "Copied to clipboard :)"
 		[ -f "${_dir}/${VAR1}/key" ] && echo "Warning - Plain text key file ${_dir}/${VAR1}/key found."
 esac
